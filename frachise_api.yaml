@@ -1,0 +1,586 @@
+openapi: '3.1.0'
+info:
+  title:  Wendy's Franchise Sales APIs
+  version: '1.0.0'
+  description: |
+    The Wendy’s Franchise Sales Services offer secure access to key sales features such as authentication, sales transaction reporting, sales summaries, end of day site status, and tender category lookups, supporting both franchise operators and internal teams in managing point of sale activity.
+
+    ### Available API Endpoints:
+
+    * Transactions List - Retrieves individual sales transaction records from the NCR system.
+    * Transaction Summary - Retrieves an aggregated sales summary from the NCR system.
+    * Tender Categories - Retrieves the full list of supported tender categories.
+    * Site EOD Status - Retrieves the End-of-Day (EOD) processing status for all sites for a given business date.
+  
+servers:
+  - url: https://{environment}.analytics.wendys.com/
+    variables:    
+      environment:
+        default: api         # Development server
+        enum:
+          - api         # Development server
+          - api-prod        # Production server    
+          
+components:
+  securitySchemes:
+    Oauth2Security:
+       type: oauth2
+       flows:
+         clientCredentials:
+           tokenUrl: https://api.analytics.wendys.com/oauth/client_credential/accesstoken
+           scopes: 
+            "read:wendys": Access Wendys APIs
+           
+  schemas:
+    SalesTransaction:
+      type: object
+      properties:
+        sales_transaction_id:
+          type: string
+        site_num:
+          type: integer
+        employee_num:
+          type: integer
+        business_date:
+          type: string
+          format: date
+        receipt_id:
+          type: integer
+        transaction_number:
+          type: integer
+        transaction_reason:
+          type: string
+        transaction_type_desc:
+          type: string
+        txn_arrival_time_utc:
+          type: string
+          format: date-time
+        txn_updateDateTime_utc:
+          type: string
+          format: date-time
+        txn_close_time_utc:
+          type: string
+          format: date-time
+        txn_close_time_local:
+          type: string
+          format: date-time
+        daypart_name:
+          type: string
+        currency_code:
+          type: string
+        tender_amt:
+          type: number
+          nullable: true
+        tender_cnt:
+          type: number
+          nullable: true
+        tender_name:
+          type: string
+          nullable: true
+        tender_type:
+          type: string
+          nullable: true
+        total_tax_amt:
+          type: number
+          format: float
+        gross_sales_amt:
+          type: number
+          format: float
+        net_sales_amt:
+          type: number
+          format: float
+        transaction_cnt:
+          type: integer
+        coupon_amt:
+          type: number
+          format: float
+        coupon_cnt:
+          type: number
+          format: float
+        discount_amt:
+          type: number
+          format: float
+        discount_cnt:
+          type: number
+          format: float
+        kids_meal_amt:
+          type: number
+          format: float
+        kids_meal_cnt:
+          type: integer
+        kids_meal_toy_amt:
+          type: number
+          format: float
+        kids_meal_toy_cnt:
+          type: integer
+        gift_card_sales_amt:
+          type: number
+          format: float
+        gift_card_sales_cnt:
+          type: integer
+        local_promo_amt:
+          type: number
+          format: float
+        local_promo_cnt:
+          type: integer
+        location_name:
+          type: string
+        item_discounts:
+          $ref: '#/components/schemas/ItemDiscounts'
+        menu_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+        transaction_tenders:
+          $ref: '#/components/schemas/TransactionTenders'
+        last_update_time:
+          type: string
+          format: date-time
+      
+    ItemDiscounts:
+      type: object
+      properties:
+        site_num:
+          type: integer
+        business_date:
+          type: string
+          format: date
+        check_num:
+          type: integer
+        sales_transaction_id:
+          type: string
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discount'
+      
+    Discount:
+      type: object
+      properties:
+        tlog_item_product_id:
+          type: string
+        line_item_id:
+          type: string
+        discount_desc:
+          type: string
+        discount_type:
+          type: string
+        discount_type_label:
+          type: string
+        discount_id:
+          type: string
+        discount_name:
+          type: string
+        discount_amt:
+          type: number
+          format: float
+        parent_item_id:
+          type: string
+
+    
+    MenuItem:
+      type: object
+      properties:
+        sales_transaction_id:
+          type: string
+        line_item_id:
+          type: string
+        item_sold_as_type:
+          type: string
+        tlog_item_product_id:
+          type: string
+        mastered_item_id:
+          type: integer
+        tlog_item_desc:
+          type: string
+        combo_size:
+          type: string
+          nullable: true
+        combo_size_desc:
+          type: string
+          nullable: true
+        item_total_amt:
+          type: number
+          format: float
+        item_base_amt:
+          type: number
+          format: float
+        item_pos_amt:
+          type: number
+          format: float
+        item_upsell_amt:
+          type: number
+          format: float
+        item_upcharge_amt:
+          type: number
+          format: float
+        item_retail_amt:
+          type: number
+          format: float
+        menu_item_num:
+          type: integer
+        menu_item_discount_amt:
+          type: number
+          format: float
+        menu_discounted_item_amt:
+          type: number
+          format: float
+        individual_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndividualItem'
+
+    TransactionTenders:
+      type: object
+      properties:
+        site_num:
+          type: integer
+          nullable: true
+        business_date:
+          type: string
+          format: date
+          nullable: true
+        check_num:
+          type: integer
+          nullable: true
+        sales_transaction_id:
+          type: string
+          nullable: true
+        tender_amt:
+          type: number
+          nullable: true
+        tender_cnt:
+          type: number
+          nullable: true
+        tenders:
+          type: array
+          items:
+            type: object
+
+    IndividualItem:
+      type: object
+      properties:
+        sales_transaction_id:
+          type: string
+        item_id:
+          type: string
+        combo_upgrade:
+          type: boolean
+        item_details:
+          $ref: '#/components/schemas/ItemDetails'
+
+    ItemDetails:
+      type: object
+      properties:
+        line_item_id:
+          type: string
+        parent_id:
+          type: string
+          nullable: true
+        combo_group_id:
+          type: string
+          nullable: true
+        tlog_item_product_id:
+          type: string
+        mastered_item_id:
+          type: integer
+        tlog_item_desc:
+          type: string
+        item_sold_as_type:
+          type: string
+        combo_size:
+          type: string
+          nullable: true
+        combo_size_desc:
+          type: string
+          nullable: true
+        item_pos_amt:
+          type: number
+          format: float
+        item_retail_amt:
+          type: number
+          format: float
+        item_base_amt:
+          type: number
+          format: float
+        item_upsell_amt:
+          type: number
+          format: float
+        item_upcharge_amt:
+          type: number
+          format: float
+        modifier_variation_id:
+          type: string
+          nullable: true
+        modifier_variation_desc:
+          type: string
+          nullable: true
+        item_discount_amt:
+          type: number
+          format: float
+        discounted_item_amt:
+          type: number
+          format: float
+
+    
+    SalesTransactionSummary:
+      type: object
+      properties:
+        site_num:
+          type: integer
+          example: 11267
+
+        business_date:
+          type: string
+          format: date
+          example: 2026-03-31
+
+        check_count:
+          type: integer
+          example: 394
+
+        transaction_count:
+          type: integer
+          example: 393
+
+        transaction_gross_sales_amt:
+          type: number
+          format: float
+          example: 5035.41
+
+        transaction_net_sales_amt:
+          type: number
+          format: float
+          example: 4879.89
+
+        transaction_total_tax_amt:
+          type: number
+          format: float
+          example: 417.33
+
+        transaction_void_amt:
+          type: number
+          format: float
+          example: 96.58
+
+        transaction_total_coupon_amt:
+          type: number
+          format: float
+          example: 124.98
+
+        transaction_total_discount_amt:
+          type: number
+          format: float
+          example: 30.54
+
+        discover:
+          type: number
+          format: float
+          example: 106.87
+
+        visa:
+          type: number
+          format: float
+          example: 1540.62
+
+        amex:
+          type: number
+          format: float
+          example: 97.37
+
+        mastercard:
+          type: number
+          format: float
+          example: 319.14
+
+        last_updated:
+          type: string
+          format: date-time
+          example: 2026-03-31T23:30:16.992546+00:00
+    AccessTokenExpired: 
+      type: object 
+      properties: 
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+    TenderCategory:
+      type: object
+      properties:
+        tender_name:
+          type: string 
+          examples: ['Mastercard']
+        tender_uid:
+          type: string
+          examples: ['c13730df095c5619096e1e6']
+        tender_description: 
+          type: string
+          examples: ['Mastercard']
+        tender_category: 
+          type: string
+          examples: ['Credit']
+        tender_sub_category: 
+          type: string
+          examples: ['Credit']
+    EndofSite:
+      type: object
+      properties:
+        site_num:
+          type: integer 
+          examples: [1034]
+        business_date:
+          type: string
+          examples: ['2026-02-01']
+        eod_flag_recived: 
+          type: boolean
+          examples: [true]
+        eod_timestamp_utc: 
+          type: string
+          examples: ['2026-02-02T10:05:09.187417+00:00']
+       
+    
+
+paths:
+  /sales-ncr/v1/transactions:
+    get:
+      tags: 
+        - Franchise Sales Service
+      summary: Retrieves the franchise sales transaction list.
+      description: This endpoint retrieves sales data of the specific Franchise based on the provided business date and site number. 
+      security:
+        - Oauth2Security:
+            - read:wendys             
+      parameters:
+        - name: business_date
+          in: query
+          required: true
+          description: Business date of the transactions - YYYY-MM-DD.
+          schema:
+            type: string
+            format: date
+        - name: site_num
+          in: query
+          required: true
+          description: Site number of the transactions.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A JSON array of franchise sales transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesTransaction'
+        "401":
+          description: Access token expired.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/AccessTokenExpired'
+
+  /sales-ncr/v1/summary:
+    get:
+      tags: 
+        - Franchise Sales Service
+      summary: Retrieves a list of sales transaction summary.
+      description: This endpoint retrieves sales transaction summary based on the provided Business Date. 
+      security:
+        - Oauth2Security:
+            - read:wendys           
+      parameters:
+        - name: business_date
+          in: query
+          required: true
+          description: The business date for which to retrieve sales data.
+          schema:
+            type: string
+            format: date
+        - name: site_num
+          in: query
+          required: true
+          description: The site number for which to retrieve sales data.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A JSON array of sales transaction summary sales by Business Date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesTransactionSummary'
+        "400":
+          description: Bad Request
+        "401":
+          description: Access token expired.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/AccessTokenExpired'
+  /tender-categories:
+    get: 
+      tags:
+        - Franchise Sales Service
+      summary: Retrieves the full list of supported tender categories.
+      description: This endpoint retrieves the full list of supported tender categories (e.g., CASH, CREDIT_CARD, GIFT_CARD, HOUSE_ACCOUNT, GENERIC) available in the system.
+      security:
+        - Oauth2Security:
+            - read:wendys
+      responses:
+        "200":
+          description: A JSON array of sales transaction summary sales by Business Date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TenderCategory'
+        "400":
+          description: Bad Request
+        "401":
+          description: Access token expired.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/AccessTokenExpired'
+  /site-eod-status:
+    get: 
+      tags:
+        - Franchise Sales Service
+      summary: Retrieves the End-of-Day (EOD) processing status .
+      description: Retrieves the End-of-Day (EOD) processing status for all sites for a given business date (YYYY-MM-DD), provided as a required query parameter. 
+      security:
+        - Oauth2Security:
+            - read:wendys
+      parameters:
+        - name: business_date
+          in: query
+          required: true
+          description: Business date of the transactions - YYYY-MM-DD.
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: A JSON array of sales transaction summary sales by Business Date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EndofSite'
+        "400":
+          description: Bad Request
+        "401":
+          description: Access token expired.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/AccessTokenExpired'
+    
